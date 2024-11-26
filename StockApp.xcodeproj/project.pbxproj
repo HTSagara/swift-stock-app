@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		2D0488402CF6734100084802 /* StockSymbol+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D04883E2CF6734100084802 /* StockSymbol+CoreDataClass.swift */; };
+		2D0488412CF6734100084802 /* StockSymbol+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D04883F2CF6734100084802 /* StockSymbol+CoreDataProperties.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		2D0487E52CF62FB100084802 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +32,8 @@
 		2D0487CA2CF62FB000084802 /* StockApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StockApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D0487E42CF62FB100084802 /* StockAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StockAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D0487EE2CF62FB100084802 /* StockAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StockAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2D04883E2CF6734100084802 /* StockSymbol+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StockSymbol+CoreDataClass.swift"; sourceTree = "<group>"; };
+		2D04883F2CF6734100084802 /* StockSymbol+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StockSymbol+CoreDataProperties.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -88,9 +95,12 @@
 		2D0487C12CF62FB000084802 = {
 			isa = PBXGroup;
 			children = (
+				2D04883E2CF6734100084802 /* StockSymbol+CoreDataClass.swift */,
+				2D04883F2CF6734100084802 /* StockSymbol+CoreDataProperties.swift */,
 				2D0487CC2CF62FB000084802 /* StockApp */,
 				2D0487E72CF62FB100084802 /* StockAppTests */,
 				2D0487F12CF62FB100084802 /* StockAppUITests */,
+				2D0488092CF6326E00084802 /* Frameworks */,
 				2D0487CB2CF62FB000084802 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -103,6 +113,13 @@
 				2D0487EE2CF62FB100084802 /* StockAppUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		2D0488092CF6326E00084802 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -208,6 +225,9 @@
 			);
 			mainGroup = 2D0487C12CF62FB000084802;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				2D0488152CF64F0000084802 /* XCRemoteSwiftPackageReference "Alamofire" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2D0487CB2CF62FB000084802 /* Products */;
 			projectDirPath = "";
@@ -249,6 +269,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2D0488402CF6734100084802 /* StockSymbol+CoreDataClass.swift in Sources */,
+				2D0488412CF6734100084802 /* StockSymbol+CoreDataProperties.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -565,6 +587,17 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		2D0488152CF64F0000084802 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.10.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
 	};
 	rootObject = 2D0487C22CF62FB000084802 /* Project object */;
 }
