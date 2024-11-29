@@ -10,6 +10,9 @@ import UIKit
 class StockViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     @IBOutlet weak var tableView: UITableView!
     
+    // Refresh control for pull-to-refresh
+    private let refreshControl = UIRefreshControl()
+    
     // Data source
     var activeStocks: [Stock] = []
     var watchingStocks: [Stock] = []
@@ -24,6 +27,11 @@ class StockViewController: UIViewController, UITableViewDataSource, UITableViewD
 
         // Add navigation bar buttons
         configureNavigationBar()
+        
+        // Set up refresh control
+        refreshControl.addTarget(self, action: #selector(refreshStockData), for: .valueChanged)
+        tableView.refreshControl = refreshControl
+        
 
         // Fetch saved symbols from Core Data
         let savedSymbols = CoreDataManager.shared.fetchStockSymbols()
@@ -39,6 +47,15 @@ class StockViewController: UIViewController, UITableViewDataSource, UITableViewD
         }
 
         // Fetch stock data from API
+        fetchStockData(for: symbols)
+    }
+    
+    // Refresh stock data when pulled
+    @objc private func refreshStockData() {
+        // Combine all symbols from both categories
+        let symbols = (activeStocks + watchingStocks).map { $0.symbol }
+        
+        // Fetch stock data
         fetchStockData(for: symbols)
     }
 
@@ -62,6 +79,9 @@ class StockViewController: UIViewController, UITableViewDataSource, UITableViewD
                 case .failure(let error):
                     print("Error fetching stock data: \(error.localizedDescription)")
                 }
+                
+                // End refreshing
+                self?.refreshControl.endRefreshing()
             }
         }
     }

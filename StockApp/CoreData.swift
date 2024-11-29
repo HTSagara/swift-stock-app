@@ -79,9 +79,6 @@ class CoreDataManager {
         return result
     }
 
-
-
-
     // Delete a stock symbol
     func deleteStockSymbol(_ symbol: String) {
         let fetchRequest: NSFetchRequest<StockSymbol> = StockSymbol.fetchRequest()
