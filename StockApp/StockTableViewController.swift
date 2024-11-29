@@ -16,36 +16,48 @@ class StockViewController: UIViewController, UITableViewDataSource, UITableViewD
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         // Set up table view
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "stockCell")
-        
+
         // Add navigation bar buttons
         configureNavigationBar()
-        
+
         // Fetch saved symbols from Core Data
         let savedSymbols = CoreDataManager.shared.fetchStockSymbols()
-        
-        if !savedSymbols.isEmpty {
-            fetchStockData(for: savedSymbols)
-        } else {
-            // Provide fallback if no stocks are saved
-            print("No saved stock symbols.")
+        var symbols: [String] = []
+
+        for (category, stocks) in savedSymbols {
+            if category == "Active" {
+                activeStocks.append(contentsOf: stocks)
+            } else if category == "Watching" {
+                watchingStocks.append(contentsOf: stocks)
+            }
+            symbols.append(contentsOf: stocks.map { $0.symbol })
         }
+
+        // Fetch stock data from API
+        fetchStockData(for: symbols)
     }
+
     
     private func fetchStockData(for symbols: [String]) {
         let api = StockAPI()
-        
+
         api.fetchStockData(for: symbols) { [weak self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let stocks):
-                    // Assume first half is Active, second half is Watching
-                    self?.activeStocks = Array(stocks.prefix(2))
-                    self?.watchingStocks = Array(stocks.suffix(from: 2))
+                    // Match stocks to the appropriate categories
+                    for stock in stocks {
+                        if let index = self?.activeStocks.firstIndex(where: { $0.symbol == stock.symbol }) {
+                            self?.activeStocks[index] = stock
+                        } else if let index = self?.watchingStocks.firstIndex(where: { $0.symbol == stock.symbol }) {
+                            self?.watchingStocks[index] = stock
+                        }
+                    }
                     self?.tableView.reloadData()
                 case .failure(let error):
                     print("Error fetching stock data: \(error.localizedDescription)")
@@ -53,6 +65,7 @@ class StockViewController: UIViewController, UITableViewDataSource, UITableViewD
             }
         }
     }
+
 
     
     // MARK: - Configure Navigation Bar
@@ -78,13 +91,13 @@ class StockViewController: UIViewController, UITableViewDataSource, UITableViewD
     // MARK: - Add Stock Button Action
     @objc private func addStock() {
         let addStockVC = AddStockViewController()
-        addStockVC.onAddStock = { [weak self] newStock, list in
+        addStockVC.onAddStock = { [weak self] newStock, list, rank in // Include rank
             guard let self = self else { return }
             
-            // Save stock symbol to Core Data
-            CoreDataManager.shared.saveStockSymbol(newStock.symbol)
+            // Save stock with category and rank
+            CoreDataManager.shared.saveStockSymbol(newStock.symbol, category: list, rank: rank)
             
-            // Add stock to the appropriate list in memory
+            // Add stock to the appropriate list
             if list == "Active" {
                 self.activeStocks.append(newStock)
             } else {
@@ -95,6 +108,11 @@ class StockViewController: UIViewController, UITableViewDataSource, UITableViewD
         }
         present(addStockVC, animated: true, completion: nil)
     }
+
+
+
+
+
 
 
     // MARK: - UITableViewDataSource Methods
@@ -114,14 +132,84 @@ class StockViewController: UIViewController, UITableViewDataSource, UITableViewD
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "stockCell", for: indexPath)
         let stock = indexPath.section == 0 ? activeStocks[indexPath.row] : watchingStocks[indexPath.row]
-        cell.textLabel?.text = "\(stock.shortName) (\(stock.symbol)) - $\(stock.regularMarketPrice)"
+
+        // Format the stock details
+        let rankEmoji: String
+        switch stock.rank {
+        case "Cold":
+            rankEmoji = "❄️"
+        case "Hot":
+            rankEmoji = "🔥"
+        case "Very Hot":
+            rankEmoji = "🔥🔥"
+        default:
+            rankEmoji = "⚪️"
+        }
+
+        let stockDetails = "\(rankEmoji) \(stock.symbol) - \(stock.shortName ?? "Loading...")"
+        let price = stock.regularMarketPrice != nil ? String(format: "$ %.2f", stock.regularMarketPrice!) : "Fetching price..."
+
+        // Use multiline text
+        cell.textLabel?.numberOfLines = 2
+        cell.textLabel?.text = "\(stockDetails)\n\(price)"
+        cell.textLabel?.font = .systemFont(ofSize: 16)
+
+        // Set background color based on rank
+        switch stock.rank {
+        case "Cold":
+            cell.backgroundColor = .systemBlue.withAlphaComponent(0.2)
+        case "Hot":
+            cell.backgroundColor = .systemOrange.withAlphaComponent(0.2)
+        case "Very Hot":
+            cell.backgroundColor = .systemRed.withAlphaComponent(0.2)
+        default:
+            cell.backgroundColor = .white
+        }
+
         return cell
     }
 
-    // MARK: - UITableViewDelegate Methods
 
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let stock = indexPath.section == 0 ? activeStocks[indexPath.row] : watchingStocks[indexPath.row]
-        print("Selected stock: \(stock.shortName) (\(stock.symbol)) - $\(stock.regularMarketPrice)")
+
+    
+    private func createRankLabel(for rank: String?) -> UILabel {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 20)
+        
+        // Safely unwrap the optional rank
+        switch rank {
+        case "Cold":
+            label.text = "❄️"
+        case "Hot":
+            label.text = "🔥"
+        case "Very Hot":
+            label.text = "🔥🔥"
+        default:
+            label.text = "⚪️"
+        }
+        return label
     }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            // Determine the stock to delete
+            let stockToDelete = indexPath.section == 0 ? activeStocks[indexPath.row] : watchingStocks[indexPath.row]
+            
+            // Remove the stock from Core Data
+            CoreDataManager.shared.deleteStockSymbol(stockToDelete.symbol)
+            
+            // Remove the stock from the appropriate list
+            if indexPath.section == 0 {
+                activeStocks.remove(at: indexPath.row)
+            } else {
+                watchingStocks.remove(at: indexPath.row)
+            }
+            
+            // Delete the row from the table view
+            tableView.deleteRows(at: [indexPath], with: .fade)
+        }
+    }
+
 }
+
+

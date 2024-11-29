@@ -36,17 +36,20 @@ class StockAPI {
                 return
             }
             
+            // Log the raw response for debugging
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("API Response: \(jsonString)")
+            }
+            
             do {
                 let decodedResponse = try JSONDecoder().decode(YahooFinanceResponse.self, from: data)
                 completion(.success(decodedResponse.quoteResponse.result))
             } catch {
+                print("JSON Decoding Error: \(error.localizedDescription)")
                 completion(.failure(error))
             }
         }.resume()
     }
-
-
-
 
 }
 
@@ -94,8 +97,6 @@ struct StockTicker: Codable {
     let symbol: String
     let regularMarketPrice: Double?
 }
-
-
 
 struct StockResponse: Codable {
     let result: [Stock]

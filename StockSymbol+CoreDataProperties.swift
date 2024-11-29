@@ -18,6 +18,8 @@ extension StockSymbol {
 
     @NSManaged public var symbol: String?
     @NSManaged public var category: String?
+    @NSManaged public var rank: String?
+
 
 }
 
