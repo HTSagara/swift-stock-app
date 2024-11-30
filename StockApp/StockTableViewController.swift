@@ -135,6 +135,7 @@ class StockViewController: UIViewController, UITableViewDataSource, UITableViewD
 
 
 
+
     // MARK: - UITableViewDataSource Methods
 
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -228,6 +229,56 @@ class StockViewController: UIViewController, UITableViewDataSource, UITableViewD
             // Delete the row from the table view
             tableView.deleteRows(at: [indexPath], with: .fade)
         }
+    }
+
+    
+    private func changeCategory(for stock: Stock, to newCategory: String, at indexPath: IndexPath) {
+        // Update Core Data
+        CoreDataManager.shared.saveStockSymbol(stock.symbol, category: newCategory, rank: stock.rank ?? "Cold")
+        
+        // Remove the stock from its current category
+        if indexPath.section == 0 {
+            activeStocks.remove(at: indexPath.row)
+        } else {
+            watchingStocks.remove(at: indexPath.row)
+        }
+
+        // Add the stock to the new category
+        var updatedStock = stock
+        updatedStock.rank = stock.rank // Keep the rank unchanged
+        if newCategory == "Active" {
+            activeStocks.append(updatedStock)
+        } else {
+            watchingStocks.append(updatedStock)
+        }
+
+        // Reload the table view
+        tableView.reloadData()
+    }
+
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard tableView.isEditing else { return } // Only act in editing mode
+
+        let stock = indexPath.section == 0 ? activeStocks[indexPath.row] : watchingStocks[indexPath.row]
+
+        // Show action sheet to change category
+        let alert = UIAlertController(title: "Change Category", message: "Select a new category for \(stock.symbol).", preferredStyle: .actionSheet)
+        
+        alert.addAction(UIAlertAction(title: "Active", style: .default, handler: { _ in
+            self.changeCategory(for: stock, to: "Active", at: indexPath)
+        }))
+        alert.addAction(UIAlertAction(title: "Watching", style: .default, handler: { _ in
+            self.changeCategory(for: stock, to: "Watching", at: indexPath)
+        }))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+
+        present(alert, animated: true, completion: nil)
+    }
+
+
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true // Enable editing for all rows
     }
 
 }
