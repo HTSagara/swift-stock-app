@@ -92,7 +92,13 @@ class CoreDataManager {
                         symbol: symbol,
                         shortName: nil, // Short name will be fetched from API
                         regularMarketPrice: nil, // Price will be fetched from API
-                        rank: rank
+                        rank: rank,
+                        dividendYield: nil,
+                        trailingPE: nil,
+                        forwardPE: nil,
+                        marketCap: nil,
+                        fiftyTwoWeekHigh: nil,
+                        fiftyTwoWeekLow: nil
                     )
                 }
                 result.append((category: category, symbols: stocks))
